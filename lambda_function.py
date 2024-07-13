@@ -11,10 +11,10 @@ def lambda_handler(event, context):
     if request_body['operation'] == 'register':
 
         try:
+            print("Registering new user")
             create_user_params = {
                 'UserPoolId': 'us-east-1_pGFsCFVuS',
                 'Username': request_body['email'],
-                'TemporaryPassword': request_body['temporaryPassword'],
                 'UserAttributes': [
                     {'Name': 'email', 'Value': request_body['email']},
                     {'Name': 'email_verified', 'Value': 'true'}
@@ -22,10 +22,21 @@ def lambda_handler(event, context):
             }
 
             response = client.admin_create_user(**create_user_params)
+            print("User created successfully: ", response)
+
+            set_password_params = {
+                'UserPoolId': 'us-east-1_pGFsCFVuS',
+                'Username': request_body['email'],
+                'Password': request_body['password'],
+                'Permanent': True
+            }
+
+            client.admin_set_user_password(**set_password_params)
+            print("Password set successfully")
 
             return {
                 'statusCode': 200,
-                'body': json.dumps({'message': 'User created successfully', 'user': str(response['User'])})
+                'body': json.dumps({'message': 'User created and confirmed successfully', 'user': str(response['User'])})
             }
         except ClientError as e:
             print(f"User creation error: {e.response['Error']['Message']}")
@@ -56,7 +67,11 @@ def lambda_handler(event, context):
 				'headers': {
 					'Access-Control-Allow-Origin': '*'
 				},
-				'body': json.dumps(str(response))
+                'body': json.dumps({
+                    'accessToken': response['AuthenticationResult']['AccessToken'],
+                    'idToken': response['AuthenticationResult']['IdToken'],
+                    'refreshToken': response['AuthenticationResult']['RefreshToken']
+                })
 			}
         except Exception as e:
             return {
