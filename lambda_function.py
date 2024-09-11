@@ -6,14 +6,16 @@ client = boto3.client('cognito-idp', region_name='us-east-1')
 
 def lambda_handler(event, context):
     
-    request_body = event
+    request_body = json.loads(event['body'])
+    
+    print(request_body)
 
     if request_body['operation'] == 'register':
 
         try:
             print("Registering new user")
             create_user_params = {
-                'UserPoolId': 'us-east-1_pGFsCFVuS',
+                'UserPoolId': 'us-east-1_hzdXzUH3o',
                 'Username': request_body['email'],
                 'UserAttributes': [
                     {'Name': 'email', 'Value': request_body['email']},
@@ -25,7 +27,7 @@ def lambda_handler(event, context):
             print("User created successfully: ", response)
 
             set_password_params = {
-                'UserPoolId': 'us-east-1_pGFsCFVuS',
+                'UserPoolId': 'us-east-1_hzdXzUH3o',
                 'Username': request_body['email'],
                 'Password': request_body['password'],
                 'Permanent': True
@@ -50,8 +52,8 @@ def lambda_handler(event, context):
             username = request_body['email']
             password = request_body['password']
 			
-            user_pool_id = 'us-east-1_pGFsCFVuS'
-            client_id = '3mmedbc37gunvdc708k2s6nsiu'
+            user_pool_id = 'us-east-1_hzdXzUH3o'
+            client_id = '2l3fbmb32g5bcp8prtain2kvb'
 
             response = client.initiate_auth(
 				AuthFlow='USER_PASSWORD_AUTH',
